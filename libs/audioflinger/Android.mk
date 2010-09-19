@@ -99,6 +99,10 @@ ifeq ($(strip $(BOARD_USES_GENERIC_AUDIO)),true)
   LOCAL_CFLAGS += -DGENERIC_AUDIO
 else
   LOCAL_SHARED_LIBRARIES += libaudio libaudiopolicy
+  ifeq ($(BOARD_USES_ECLAIR_LIBAUDIO),true)
+    LOCAL_STATIC_LIBRARIES += libaudiopolicybase
+    LOCAL_CFLAGS += -DBOARD_USES_ECLAIR_LIBAUDIO
+  endif
 endif
 
 ifeq ($(TARGET_SIMULATOR),true)
