@@ -91,8 +91,6 @@ class NotificationManagerService extends INotificationManager.Stub {
 
     private static final int DEFAULT_STREAM_TYPE = AudioManager.STREAM_NOTIFICATION;
 
-    private static final Calendar CALENDAR = Calendar.getInstance();
-
     final Context mContext;
 
     final IActivityManager mAm;
@@ -934,12 +932,13 @@ class NotificationManagerService extends INotificationManager.Stub {
     private boolean inQuietHours() {
         if (mQuietHoursEnabled && (mQuietHoursStart != mQuietHoursEnd)) {
             // Get the date in "quiet hours" format.
-            int minutes = CALENDAR.get(Calendar.HOUR_OF_DAY) * 60 + CALENDAR.get(Calendar.MINUTE);
+            Calendar calendar = Calendar.getInstance();
+            int minutes = calendar.get(Calendar.HOUR_OF_DAY) * 60 + calendar.get(Calendar.MINUTE);
             if (mQuietHoursEnd < mQuietHoursStart) {
                 // Starts at night, ends in the morning.
-                return (minutes > mQuietHoursStart) || (minutes < mQuietHoursEnd);
+                return ((minutes > mQuietHoursStart) || (minutes < mQuietHoursEnd));
             } else {
-                return (minutes > mQuietHoursStart) && (minutes < mQuietHoursEnd);
+                return ((minutes > mQuietHoursStart) && (minutes < mQuietHoursEnd));
             }
         }
         return false;
@@ -1202,7 +1201,7 @@ class NotificationManagerService extends INotificationManager.Stub {
         }
 
         public void run() {
-            powerWake.acquire(sleepTimer);
+            powerWake.acquire((sleepTimer+1000));
             try {
                 Thread.sleep(sleepTimer);
             } catch (InterruptedException e) {
@@ -1222,6 +1221,81 @@ class NotificationManagerService extends INotificationManager.Stub {
 
     public void newExecutor() {
         threadExecutor = Executors.newSingleThreadExecutor();
+    }
+
+    private int getLedARGB(NotificationRecord sLight) {
+        int rledARGB = sLight.notification.ledARGB;
+        int mRandomColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.TRACKBALL_NOTIFICATION_RANDOM, 0);
+        int mPulseAllColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.TRACKBALL_NOTIFICATION_PULSE_ORDER, 0);
+        int mBlendColor = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.TRACKBALL_NOTIFICATION_BLEND_COLOR, 0);
+
+        if ((sLight.notification.defaults & Notification.DEFAULT_LIGHTS) != 0) {
+                rledARGB = mDefaultNotificationColor;
+        }
+
+        String[] mPackageInfo = findPackage(sLight.pkg);
+        if (mPackageInfo != null) {
+            if (!mPackageInfo[1].equals("none")) {
+                if (mPackageInfo[1].equals("random")) {
+                    Random generator = new Random();
+                    int x = generator.nextInt(colorList.length - 1);
+                    rledARGB = Color.parseColor(colorList[x]);
+                } else {
+                    rledARGB = Color.parseColor(mPackageInfo[1]);
+                }
+            }
+        }
+
+        if (mRandomColor == 1) {
+            // Lets make this intresting...
+            Random generator = new Random();
+            int x = generator.nextInt(colorList.length - 1);
+            rledARGB = Color.parseColor(colorList[x]);
+        } else if (mPulseAllColor == 1) {
+            if (lastColor >= colorList.length)
+                lastColor = 1;
+
+            rledARGB = Color.parseColor(colorList[lastColor - 1]);
+            lastColor = lastColor + 1;
+        } else if (mBlendColor == 1) { // Blend lights: Credit to eshabtai
+                                       // for the application of this.
+            rledARGB = 0;
+            for (NotificationRecord light : mLights) {
+                mPackageInfo = findPackage(light.pkg);
+                if (mPackageInfo != null) {
+                    if (mPackageInfo[1].equals("random")) {
+                        Random generator = new Random();
+                        int j = generator.nextInt(colorList.length - 1);
+                        rledARGB |= Color.parseColor(colorList[j]);
+                    } else {
+                        rledARGB |= Color.parseColor(mPackageInfo[1]);
+                    }
+                } else if ((light.notification.defaults & Notification.DEFAULT_LIGHTS) != 0) {
+                    rledARGB |= light.notification.ledARGB;
+                }
+            }
+            if (rledARGB == 0) {
+                rledARGB = mDefaultNotificationColor;
+            }
+        }
+
+        // Adjust the LED for quiet hours
+        if (inQuietHours() && mQuietHoursDim) {
+            // Cut all of the channels by a factor of 16 to dim on capable
+            // hardware.
+            // Note that this should fail gracefully on other hardware.
+            int argb = rledARGB;
+            int red = (((argb & 0xFF0000) >>> 16) >>> 4);
+            int green = (((argb & 0xFF00) >>> 8) >>> 4);
+            int blue = ((argb & 0xFF) >>> 4);
+
+            rledARGB = (0xFF000000 | (red << 16) | (green << 8) | blue);
+        }
+
+        return rledARGB;
     }
 
     // lock on mNotificationList
@@ -1301,11 +1375,10 @@ class NotificationManagerService extends INotificationManager.Stub {
                     mLastLight = thisLight;
                 }
             }
-            int ledARGB = mLedNotification.notification.ledARGB;
+            int ledARGB = getLedARGB(mLedNotification);
             int ledOnMS = mLedNotification.notification.ledOnMS;
             int ledOffMS = mLedNotification.notification.ledOffMS;
             if ((mLedNotification.notification.defaults & Notification.DEFAULT_LIGHTS) != 0) {
-                ledARGB = mDefaultNotificationColor;
                 ledOnMS = mDefaultNotificationLedOn;
                 ledOffMS = mDefaultNotificationLedOff;
             }
@@ -1313,65 +1386,12 @@ class NotificationManagerService extends INotificationManager.Stub {
             String[] mPackageInfo = findPackage(mLedNotification.pkg);
             if (mPackageInfo != null) {
                 if (!mPackageInfo[1].equals("none")) {
-                    if (mPackageInfo[1].equals("random")) {
-                        Random generator = new Random();
-                        int x = generator.nextInt(colorList.length - 1);
-                        ledARGB = Color.parseColor(colorList[x]);
-                    } else {
-                        ledARGB = Color.parseColor(mPackageInfo[1]);
-                    }
                     if (mPackageInfo[2].equals(".5")) {
                         ledOffMS = 500;
                     } else {
                         ledOffMS = (Integer.parseInt(mPackageInfo[2]) * 1000);
                     }
                 }
-            }
-
-            if (mRandomColor == 1) {
-                // Lets make this intresting...
-                Random generator = new Random();
-                int x = generator.nextInt(colorList.length - 1);
-                ledARGB = Color.parseColor(colorList[x]);
-            } else if (mPulseAllColor == 1) {
-                if (lastColor >= colorList.length)
-                    lastColor = 1;
-
-                ledARGB = Color.parseColor(colorList[lastColor - 1]);
-                lastColor = lastColor + 1;
-            } else if (mBlendColor == 1) { // Blend lights: Credit to eshabtai
-                                           // for the application of this.
-                ledARGB = 0;
-                for (NotificationRecord light : mLights) {
-                    mPackageInfo = findPackage(light.pkg);
-                    if (mPackageInfo != null) {
-                        if (mPackageInfo[1].equals("random")) {
-                            Random generator = new Random();
-                            int j = generator.nextInt(colorList.length - 1);
-                            ledARGB |= Color.parseColor(colorList[j]);
-                        } else {
-                            ledARGB |= Color.parseColor(mPackageInfo[1]);
-                        }
-                    } else if ((light.notification.defaults & Notification.DEFAULT_LIGHTS) != 0) {
-                        ledARGB |= light.notification.ledARGB;
-                    }
-                }
-                if (ledARGB == 0) {
-                    ledARGB = mDefaultNotificationColor;
-                }
-            }
-
-            // Adjust the LED for quiet hours
-            if (inQuietHours() && mQuietHoursDim) {
-                // Cut all of the channels by a factor of 16 to dim on capable
-                // hardware.
-                // Note that this should fail gracefully on other hardware.
-                int argb = ledARGB;
-                int red = (((argb & 0xFF0000) >>> 16) >>> 4);
-                int green = (((argb & 0xFF00) >>> 8) >>> 4);
-                int blue = ((argb & 0xFF) >>> 4);
-
-                ledARGB = (0xFF000000 | (red << 16) | (green << 8) | blue);
             }
 
             if (mNotificationPulseEnabled) {
