@@ -1,6 +1,9 @@
 LOCAL_PATH:= $(call my-dir)
 include $(CLEAR_VARS)
 
+# although we use BOARD_USES_ECLAIR_LIBCAMERA (so we make it static), we also need
+# the shared libcamera_client and libsurfaceflinger_client for libvendorOMX_ti_omx...
+
 LOCAL_SRC_FILES:= \
 	Camera.cpp \
 	CameraParameters.cpp \
@@ -9,8 +12,6 @@ LOCAL_SRC_FILES:= \
 	ICameraService.cpp
 
 LOCAL_MODULE:= libcamera_client
-
-ifneq ($(BOARD_USES_ECLAIR_LIBCAMERA),true)
 
 LOCAL_SHARED_LIBRARIES := \
 	libcutils \
@@ -26,8 +27,16 @@ endif
 
 include $(BUILD_SHARED_LIBRARY)
 
-else
+include $(CLEAR_VARS)
+
+LOCAL_SRC_FILES:= \
+	Camera.cpp \
+	CameraParameters.cpp \
+	ICamera.cpp \
+	ICameraClient.cpp \
+	ICameraService.cpp
+
+LOCAL_MODULE:= libcamera_client
 
 include $(BUILD_STATIC_LIBRARY)
 
-endif
