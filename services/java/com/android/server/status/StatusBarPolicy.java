@@ -29,6 +29,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.Drawable;
 import android.media.AudioManager;
@@ -433,6 +434,23 @@ public class StatusBarPolicy {
         mClockIcon = service.addIcon(mClockData, null);
         updateClock();
 
+        ContentObserver coClock = new ContentObserver(null) {
+            @Override
+            public void onChange(boolean selfChange) {
+                updateClock();
+            }
+        };
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.CLOCK_COLOR),
+                false,
+                coClock);
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.SHOW_STATUS_CLOCK),
+                false,
+                coClock);
+
         // storage
         mStorageManager = (StorageManager) context.getSystemService(Context.STORAGE_SERVICE);
         mStorageManager.registerListener(
@@ -444,6 +462,23 @@ public class StatusBarPolicy {
                 Settings.System.BATTERY_PERCENTAGE_STATUS_COLOR);
         mBatteryIcon = service.addIcon(mBatteryData, null);
 
+        ContentObserver coBattery = new ContentObserver(null) {
+            @Override
+            public void onChange(boolean selfChange) {
+                updateBattery(null);
+            }
+        };
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.BATTERY_PERCENTAGE_STATUS_COLOR),
+                false,
+                coBattery);
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.BATTERY_PERCENTAGE_STATUS_ICON),
+                false,
+                coBattery);
+
         // phone_signal
         mPhone = (TelephonyManager)context.getSystemService(Context.TELEPHONY_SERVICE);
         mPhoneData = IconData.makeIcon("phone_signal",
@@ -453,6 +488,23 @@ public class StatusBarPolicy {
         // dbm signal level
         mPhoneDbmData = IconData.makeText("phone_dbm_signal", "", Settings.System.DBM_COLOR, Settings.System.SHOW_STATUS_DBM, false);
         mPhoneDbmIcon = service.addIcon(mPhoneDbmData, null);
+
+        ContentObserver coSignal = new ContentObserver(null) {
+            @Override
+            public void onChange(boolean selfChange) {
+                updateSignalStrength();
+            }
+        };
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.DBM_COLOR),
+                false,
+                coSignal);
+
+        mContext.getContentResolver().registerContentObserver(
+                Settings.System.getUriFor(Settings.System.SHOW_STATUS_DBM),
+                false,
+                coSignal);
 
         // register for phone state notifications.
         ((TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE))
@@ -684,11 +736,19 @@ public class StatusBarPolicy {
     }
 
     private final void updateBattery(Intent intent) {
-        mBatteryData.iconId = intent.getIntExtra("icon-small", 0);
-        mBatteryData.iconLevel = intent.getIntExtra("level", 0);
+        boolean plugged;
+        int level;
 
-        boolean plugged = intent.getIntExtra("plugged", 0) != 0;
-        int level = intent.getIntExtra("level", -1);
+        if(intent != null) {
+            mBatteryData.iconId = intent.getIntExtra("icon-small", 0);
+            mBatteryData.iconLevel = intent.getIntExtra("level", 0);
+
+            plugged = intent.getIntExtra("plugged", 0) != 0;
+            level = intent.getIntExtra("level", -1);
+        } else {
+            plugged = mBatteryPlugged;
+            level = mBatteryLevel;
+        }
 
         //show battery percentage if not plugged in and status is enabled
         if (plugged || level >= 100 ||
@@ -1020,13 +1080,22 @@ public class StatusBarPolicy {
         }
     }
 
+    private final void updateStrengthIcon() {
+        boolean signalEnabled = (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.SHOW_STATUS_HIDE_SIGNAL, 0) == 1);
+        boolean dbmEnabled = (Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.SHOW_STATUS_DBM, 0) == 1);
+        mService.setIconVisibility(mPhoneIcon, !(signalEnabled && dbmEnabled));
+    }
+
     private final void updateSignalStrength() {
         int iconLevel = -1;
         int dBm = 0;
         int[] iconList;
 
         // Display signal strength while in "emergency calls only" mode
-        if (!hasService() && !mServiceState.isEmergencyOnly()) {
+        if (!hasService() && mServiceState != null
+                && !mServiceState.isEmergencyOnly()) {
             //Slog.d(TAG, "updateSignalStrength: no service");
             if (Settings.System.getInt(mContext.getContentResolver(),
                     Settings.System.AIRPLANE_MODE_ON, 0) == 1) {
@@ -1036,6 +1105,7 @@ public class StatusBarPolicy {
             }
             mService.updateIcon(mPhoneIcon, mPhoneData, null);
             mService.updateIcon(mPhoneDbmIcon, mPhoneDbmData, null);
+            updateStrengthIcon();
             return;
         }
 
@@ -1083,6 +1153,7 @@ public class StatusBarPolicy {
         mService.updateIcon(mPhoneIcon, mPhoneData, null);
         mPhoneDbmData.text = Integer.toString(dBm);
         mService.updateIcon(mPhoneDbmIcon, mPhoneDbmData, null);
+        updateStrengthIcon();
     }
 
     private int getCdmaLevel() {
