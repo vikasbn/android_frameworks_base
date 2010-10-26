@@ -205,11 +205,6 @@ status_t A2dpAudioInterface::setVoiceVolume(float v)
     return mHardwareInterface->setVoiceVolume(v);
 }
 
-status_t A2dpAudioInterface::setFmVolume(float v)
-{
-    return mHardwareInterface->setFmVolume(v);
-}
-
 status_t A2dpAudioInterface::setMasterVolume(float v)
 {
     return mHardwareInterface->setMasterVolume(v);

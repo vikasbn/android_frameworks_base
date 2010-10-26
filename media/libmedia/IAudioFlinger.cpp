@@ -62,8 +62,7 @@ enum {
     SET_STREAM_OUTPUT,
     SET_VOICE_VOLUME,
     GET_RENDER_POSITION,
-    GET_INPUT_FRAMES_LOST,
-    SET_FM_VOLUME
+    GET_INPUT_FRAMES_LOST
 };
 
 class BpAudioFlinger : public BpInterface<IAudioFlinger>
@@ -498,15 +497,6 @@ public:
         remote()->transact(GET_INPUT_FRAMES_LOST, data, &reply);
         return reply.readInt32();
     }
-
-    virtual status_t setFmVolume(float volume)
-    {
-        Parcel data, reply;
-        data.writeInterfaceToken(IAudioFlinger::getInterfaceDescriptor());
-        data.writeFloat(volume);
-        remote()->transact(SET_FM_VOLUME, data, &reply);
-        return reply.readInt32();
-    }
 };
 
 IMPLEMENT_META_INTERFACE(AudioFlinger, "android.media.IAudioFlinger");
@@ -779,12 +769,6 @@ status_t BnAudioFlinger::onTransact(
             return NO_ERROR;
         } break;
 
-        case SET_FM_VOLUME: {
-            CHECK_INTERFACE(IAudioFlinger, data, reply);
-            float volume = data.readFloat();
-            reply->writeInt32( setFmVolume(volume) );
-            return NO_ERROR;
-        } break;
         default:
             return BBinder::onTransact(code, data, reply, flags);
     }

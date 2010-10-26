@@ -134,8 +134,6 @@ public:
     virtual status_t getRenderPosition(uint32_t *halFrames, uint32_t *dspFrames, int output) = 0;
 
     virtual unsigned int  getInputFramesLost(int ioHandle) = 0;
- 
-    virtual status_t setFmVolume(float volume) = 0;
 };
 
 

@@ -91,11 +91,6 @@ status_t AudioHardwareStub::setVoiceVolume(float volume)
     return NO_ERROR;
 }
 
-status_t AudioHardwareStub::setFmVolume(float volume)
-{
-    return NO_ERROR;
-}
-
 status_t AudioHardwareStub::setMasterVolume(float volume)
 {
     return NO_ERROR;
