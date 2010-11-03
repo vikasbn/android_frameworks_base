@@ -104,6 +104,15 @@ public abstract class KeyInputQueue {
         KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_LEFT,
         KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_DOWN,
     };
+
+    static final int[] KEY_90_MAP_VOL = new int[] {
+        KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_RIGHT,
+        KeyEvent.KEYCODE_DPAD_RIGHT, KeyEvent.KEYCODE_DPAD_UP,
+        KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_LEFT,
+        KeyEvent.KEYCODE_DPAD_LEFT, KeyEvent.KEYCODE_DPAD_DOWN,
+        KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN,
+        KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_UP,
+    };
     
     static final int[] KEY_180_MAP = new int[] {
         KeyEvent.KEYCODE_DPAD_DOWN, KeyEvent.KEYCODE_DPAD_UP,
@@ -1141,7 +1150,11 @@ public abstract class KeyInputQueue {
             mOrientation = orientation;
             switch (orientation) {
                 case Surface.ROTATION_90:
-                    mKeyRotationMap = KEY_90_MAP;
+                    if (SystemProperties.get("ro.config.volume_keys_rotation").equals("1")) {
+                        mKeyRotationMap = KEY_90_MAP_VOL;
+                    } else {
+                        mKeyRotationMap = KEY_90_MAP;
+                    }
                     break;
                 case Surface.ROTATION_180:
                     mKeyRotationMap = KEY_180_MAP;
