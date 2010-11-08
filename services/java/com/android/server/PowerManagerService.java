@@ -19,7 +19,6 @@ package com.android.server;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ShutdownThread;
 import com.android.server.am.BatteryStatsService;
-import com.android.server.status.widget.FlashlightButton;
 
 import android.app.ActivityManagerNative;
 import android.app.IActivityManager;
