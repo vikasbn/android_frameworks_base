@@ -19,6 +19,7 @@ package com.android.server;
 import com.android.internal.app.IBatteryStats;
 import com.android.internal.app.ShutdownThread;
 import com.android.server.am.BatteryStatsService;
+import com.android.server.status.widget.FlashlightButton;
 
 import android.app.ActivityManagerNative;
 import android.app.IActivityManager;
@@ -63,6 +64,8 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_OFF_TIMEOUT;
 import static android.provider.Settings.System.STAY_ON_WHILE_PLUGGED_IN;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -78,7 +81,18 @@ class PowerManagerService extends IPowerManager.Stub
     private static final String TAGF = "LightFilter";
     static final String PARTIAL_NAME = "PowerManagerService";
 
-    private static final boolean LOG_PARTIAL_WL = false;
+    private static final String FLASHLIGHT_FILE;
+    private static final String FLASHLIGHT_FILE_SPOTLIGHT = "/sys/class/leds/spotlight/brightness";
+    static {
+        File ff = new File(FLASHLIGHT_FILE_SPOTLIGHT);
+        if (ff.exists()) {
+            FLASHLIGHT_FILE = FLASHLIGHT_FILE_SPOTLIGHT;
+        } else {
+            FLASHLIGHT_FILE = "/sys/class/leds/flashlight/brightness";
+        }
+    }
+
+    private static final boolean LOG_PARTIAL_WL = true;
 
     // Indicates whether touch-down cycles should be logged as part of the
     // LOG_POWER_SCREEN_STATE log events
@@ -1418,6 +1432,18 @@ class PowerManagerService extends IPowerManager.Stub
         }
     }
 
+    public boolean getFlashlightEnabled() {
+        try {
+            FileInputStream fis = new FileInputStream(FLASHLIGHT_FILE);
+            int result = fis.read();
+            fis.close();
+            return (result != '0');
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+
     public void setScreenBrightnessOverride(int brightness) {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.DEVICE_POWER, null);
 
@@ -2391,7 +2417,7 @@ class PowerManagerService extends IPowerManager.Stub
                 }
 
                 boolean startAnimation = false;
-                if (mAutoBrightessEnabled && mScreenBrightnessOverride < 0 && !mAlwaysOnAndDimmed) {
+                if (mAutoBrightessEnabled && mScreenBrightnessOverride < 0 && !mAlwaysOnAndDimmed && !getFlashlightEnabled()) {
                     if (ANIMATE_SCREEN_LIGHTS) {
                         if (mScreenBrightness.setTargetLocked(lcdValue,
                                 AUTOBRIGHTNESS_ANIM_STEPS, INITIAL_SCREEN_BRIGHTNESS,
