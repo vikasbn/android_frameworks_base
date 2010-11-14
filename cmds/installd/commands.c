@@ -406,6 +406,7 @@ int create_cache_path(char path[PKG_PATH_MAX], const char *src)
     int srclen;
     int dstlen;
     char dexopt_data_only[PROPERTY_VALUE_MAX];
+    char dexopt_cache_only[PROPERTY_VALUE_MAX];
 
     srclen = strlen(src);
 
