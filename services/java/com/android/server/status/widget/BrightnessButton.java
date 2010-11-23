@@ -34,6 +34,7 @@ public class BrightnessButton extends PowerButton {
     private static final int MODE_AUTO_MIN_LOW_MID_HIGH_MAX=1;
     private static final int MODE_AUTO_LOW_MAX=2;
     private static final int MODE_MIN_MAX=3;
+    private static final int MODE_AUTO_MIN=4;
 
     private static final int DEFAULT_SETTING = 0;
 
@@ -126,6 +127,8 @@ Low High Max
                 return LOW_BACKLIGHT;
             } else if (currentMode == MODE_MIN_MAX) {
                 return MAXIMUM_BACKLIGHT;
+            } else if (currentMode == MODE_AUTO_MIN) {
+                return AUTO_BACKLIGHT;
             } else {
                 return DEFAULT_BACKLIGHT;
             }
