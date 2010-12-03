@@ -7,6 +7,7 @@ import com.android.server.status.widget.StateTracker;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.provider.Settings;
+import android.widget.Toast;
 
 public class ScreenTimeoutButton extends PowerButton {
 
@@ -37,6 +38,7 @@ public class ScreenTimeoutButton extends PowerButton {
 
     public void toggleState(Context context) {
         int screentimeout = getScreenTtimeout(context);
+        int screentimeoutsec;
         if (screentimeout < SCREEN_MINIMUM_TIMEOUT) {
             if (currentMode == MODE_15_60_300) {
                 screentimeout = SCREEN_MINIMUM_TIMEOUT;
@@ -71,6 +73,8 @@ public class ScreenTimeoutButton extends PowerButton {
         Settings.System.putInt(
                 context.getContentResolver(),
                 Settings.System.SCREEN_OFF_TIMEOUT, screentimeout);
+        screentimeoutsec = screentimeout/1000;
+        Toast.makeText(context, screentimeoutsec + "s" , Toast.LENGTH_SHORT).show();
     }
 
     public static ScreenTimeoutButton getInstance() {
