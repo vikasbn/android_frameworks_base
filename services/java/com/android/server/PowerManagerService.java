@@ -62,9 +62,8 @@ import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE;
 import static android.provider.Settings.System.SCREEN_BRIGHTNESS_MODE_AUTOMATIC;
 import static android.provider.Settings.System.SCREEN_OFF_TIMEOUT;
 import static android.provider.Settings.System.STAY_ON_WHILE_PLUGGED_IN;
+import static android.provider.Settings.System.TORCH_STATE;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileDescriptor;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -80,18 +79,7 @@ class PowerManagerService extends IPowerManager.Stub
     private static final String TAGF = "LightFilter";
     static final String PARTIAL_NAME = "PowerManagerService";
 
-    private static final String FLASHLIGHT_FILE;
-    private static final String FLASHLIGHT_FILE_SPOTLIGHT = "/sys/class/leds/spotlight/brightness";
-    static {
-        File ff = new File(FLASHLIGHT_FILE_SPOTLIGHT);
-        if (ff.exists()) {
-            FLASHLIGHT_FILE = FLASHLIGHT_FILE_SPOTLIGHT;
-        } else {
-            FLASHLIGHT_FILE = "/sys/class/leds/flashlight/brightness";
-        }
-    }
-
-    private static final boolean LOG_PARTIAL_WL = true;
+    private static final boolean LOG_PARTIAL_WL = false;
 
     // Indicates whether touch-down cycles should be logged as part of the
     // LOG_POWER_SCREEN_STATE log events
@@ -253,6 +241,8 @@ class PowerManagerService extends IPowerManager.Stub
     private int[] mButtonBacklightValues;
     private int[] mKeyboardBacklightValues;
     private int mLightSensorWarmupTime;
+    private boolean mFlashlightAffectsLightSensor;
+    private boolean mIgnoreLightSensor;
 
     // Custom light housekeeping
     private long mLightSettingsTag = -1;
@@ -468,6 +458,8 @@ class PowerManagerService extends IPowerManager.Stub
                  // DIM_SCREEN
                 //mDimScreen = getInt(DIM_SCREEN) != 0;
 
+                mIgnoreLightSensor = (getInt(TORCH_STATE) != 0) && mFlashlightAffectsLightSensor;
+
                 updateLightSettings();
 
                 // SCREEN_BRIGHTNESS_MODE
@@ -555,6 +547,8 @@ class PowerManagerService extends IPowerManager.Stub
         Resources resources = mContext.getResources();
 
         // read settings for auto-brightness
+        mFlashlightAffectsLightSensor = resources.getBoolean(
+                com.android.internal.R.bool.config_flashlight_affects_lightsensor);
         mUseSoftwareAutoBrightness = resources.getBoolean(
                 com.android.internal.R.bool.config_automatic_brightness_available);
         if (mUseSoftwareAutoBrightness) {
@@ -576,9 +570,10 @@ class PowerManagerService extends IPowerManager.Stub
                         + Settings.System.NAME + "=?) or ("
                         + Settings.System.NAME + "=?) or ("
                         + Settings.System.NAME + "=?) or ("
+                        + Settings.System.NAME + "=?) or ("
                         + Settings.System.NAME + "=?)",
                 new String[]{STAY_ON_WHILE_PLUGGED_IN, SCREEN_OFF_TIMEOUT, DIM_SCREEN,
-                        SCREEN_BRIGHTNESS_MODE, Settings.System.LIGHTS_CHANGED},
+                        SCREEN_BRIGHTNESS_MODE, TORCH_STATE, Settings.System.LIGHTS_CHANGED},
                 null);
         mSettings = new ContentQueryMap(settingsCursor, Settings.System.NAME, true, mHandler);
         SettingsObserver settingsObserver = new SettingsObserver();
@@ -1430,18 +1425,6 @@ class PowerManagerService extends IPowerManager.Stub
             }
         }
     }
-
-    public boolean getFlashlightEnabled() {
-        try {
-            FileInputStream fis = new FileInputStream(FLASHLIGHT_FILE);
-            int result = fis.read();
-            fis.close();
-            return (result != '0');
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
 
     public void setScreenBrightnessOverride(int brightness) {
         mContext.enforceCallingOrSelfPermission(android.Manifest.permission.DEVICE_POWER, null);
@@ -2420,7 +2403,7 @@ class PowerManagerService extends IPowerManager.Stub
                 }
 
                 boolean startAnimation = false;
-                if (mAutoBrightessEnabled && mScreenBrightnessOverride < 0 && !mAlwaysOnAndDimmed && !getFlashlightEnabled()) {
+                if (mAutoBrightessEnabled && mScreenBrightnessOverride < 0 && !mAlwaysOnAndDimmed) {
                     if (ANIMATE_SCREEN_LIGHTS) {
                         if (mScreenBrightness.setTargetLocked(lcdValue,
                                 AUTOBRIGHTNESS_ANIM_STEPS, INITIAL_SCREEN_BRIGHTNESS,
@@ -3174,7 +3157,8 @@ class PowerManagerService extends IPowerManager.Stub
         public void onSensorChanged(SensorEvent event) {
             synchronized (mLocks) {
                 // ignore light sensor while screen is turning off
-                if (isScreenTurningOffLocked()) {
+                // or when flashlight would affect it
+                if (isScreenTurningOffLocked() || mIgnoreLightSensor) {
                     return;
                 }
 
