@@ -204,7 +204,7 @@ public class MediaRecorder
         public static final int DEFAULT = 0;
         /** AMR (Narrowband) audio codec */
         public static final int AMR_NB = 1;
-        /** @hide AMR (Wideband) audio codec */
+        /** AMR (Wideband) audio codec */
         public static final int AMR_WB = 2;
         /** AAC audio codec */
         public static final int AAC = 3;
