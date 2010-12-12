@@ -26,7 +26,8 @@ namespace android {
 enum camcorder_quality {
     CAMCORDER_QUALITY_LOW   = 0,
     CAMCORDER_QUALITY_HIGH  = 1,
-    CAMCORDER_QUALITY_FRONT = 2
+    CAMCORDER_QUALITY_FRONT = 2,
+    CAMCORDER_QUALITY_MID = 3
 };
 
 enum video_decoder {
