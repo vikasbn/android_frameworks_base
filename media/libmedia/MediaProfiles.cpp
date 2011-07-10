@@ -63,6 +63,7 @@ const MediaProfiles::NameToTagMap MediaProfiles::sCamcorderQualityNameMap[] = {
     {"low",   CAMCORDER_QUALITY_LOW},
     {"front", CAMCORDER_QUALITY_FRONT},
     {"mid", CAMCORDER_QUALITY_MID}
+    {"wide", CAMCORDER_QUALITY_WIDE}
 };
 
 /*static*/ void
