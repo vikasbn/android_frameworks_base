@@ -809,7 +809,8 @@ public class SlidingTab extends ViewGroup {
             mVibrator = (android.os.Vibrator)
                     getContext().getSystemService(Context.VIBRATOR_SERVICE);
         }
-        mVibrator.vibrate(duration);
+        final boolean hapticsEnabled = Settings.System.getInt(mContext.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1;
+        if (hapticsEnabled) mVibrator.vibrate(duration);
     }
 
     /**
