@@ -16,6 +16,7 @@
 
 package com.android.internal.widget;
 
+import android.provider.Settings;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -672,7 +673,8 @@ public class RotarySelector extends View {
                     getContext().getSystemService(Context.VIBRATOR_SERVICE);
         }
         final boolean hapticsEnabled = Settings.System.getInt(mContext.getContentResolver(), Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1;
-        if (hapticsEnabled) mVibrator.vibrate(duration);
+        long[] hapFeedback = stringToLongArray(Settings.System.getString(getContext().getContentResolver(),Settings.System.HAPTIC_DOWN_ARRAY));
+        if (hapticsEnabled) mVibrator.vibrate(hapFeedback, -1);
     }
 
     /**
@@ -758,6 +760,21 @@ public class RotarySelector extends View {
         void onGrabbedStateChange(View v, int grabbedState);
     }
 
+    private long[] stringToLongArray(String inpString) {
+        if (inpString == null) {
+            long[] returnLong = new long[1];
+            returnLong[0] = 0;
+            return returnLong;
+        }
+        String[] splitStr = inpString.split(",");
+        int los = splitStr.length;
+        long[] returnLong = new long[los];
+        int i;
+        for (i = 0; i < los; i++) {
+            returnLong[i] = Long.parseLong(splitStr[i].trim());
+        }
+        return returnLong;
+    }
 
     // Debugging / testing code
 
