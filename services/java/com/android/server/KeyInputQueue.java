@@ -1164,7 +1164,7 @@ public abstract class KeyInputQueue {
             mOrientation = orientation;
             switch (orientation) {
                 case Surface.ROTATION_90:
-                    if (SystemProperties.get("ro.config.volume_keys_rotation").equals("1")) {
+                    if ("1".equals(SystemProperties.get("persist.sys.volbtn_orient_swap", "0"))) {
                         mKeyRotationMap = KEY_90_MAP_VOL;
                     } else {
                         mKeyRotationMap = KEY_90_MAP;
