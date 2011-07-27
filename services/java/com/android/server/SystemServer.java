@@ -390,11 +390,9 @@ class ServerThread extends Thread {
             }
 
             try {
-                if (!SystemProperties.get("ro.config.dockobserver").equals("0")) {
                     Slog.i(TAG, "Dock Observer");
                     // Listen for dock station changes
                     dock = new DockObserver(context, power);
-                }
             } catch (Throwable e) {
                 Slog.e(TAG, "Failure starting DockObserver", e);
             }
