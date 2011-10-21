@@ -365,7 +365,7 @@ public final class ActivityManagerService extends ActivityManagerNative implemen
         EMPTY_APP_MEM =
             Integer.valueOf(SystemProperties.get("ro.EMPTY_APP_MEM"))*PAGE_SIZE;
 
-        GMAPS_HACK = getIntProp("persist.sys.gmaps_hack", true) == 1;
+        GMAPS_HACK = Integer.valueOf(SystemProperties.get("persist.sys.gmaps_hack")) == 1;
     }
     
     static final int MY_PID = Process.myPid();
