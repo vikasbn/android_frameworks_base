@@ -107,8 +107,10 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
     private TextView mDate;
     private TextView mTime;
     private TextView mAmPm;
-    private TextView mStatus1;
-    private TextView mStatus2;
+    private LinearLayout mStatusBox;
+    private TextView mStatusCharging;
+    private TextView mStatusAlarm;
+    private TextView mStatusCalendar;
     private TextView mScreenLocked;
     private TextView mEmergencyCallText;
     private Button mEmergencyCallButton;
@@ -139,7 +141,7 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
     private int mBatteryLevel = 100;
 
     private String mNextAlarm = null;
-    private Drawable mAlarmIcon = null;
+    private String mNextCalendar = null;
     private String mCharging = null;
     private Drawable mChargingIcon = null;
 
@@ -361,8 +363,11 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
         mTime = (TextView) findViewById(R.id.timeDisplay);
         mAmPm = (TextView) findViewById(R.id.am_pm);
         mDate = (TextView) findViewById(R.id.date);
-        mStatus1 = (TextView) findViewById(R.id.status1);
-        mStatus2 = (TextView) findViewById(R.id.status2);
+
+        mStatusBox = (LinearLayout) findViewById(R.id.status_box);
+        mStatusCharging = (TextView) findViewById(R.id.status_charging);
+        mStatusAlarm = (TextView) findViewById(R.id.status_alarm);
+        mStatusCalendar = (TextView) findViewById(R.id.status_calendar);
 
         mCustomMsg = (TextView) findViewById(R.id.customMsg);
 
@@ -540,15 +545,33 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
         int ringlockStyle = Settings.System.getInt(mContext.getContentResolver(),
                 Settings.System.RINGLOCK_STYLE_PREF, RinglockStyle.getIdByStyle(RinglockStyle.Bubble));
         int resSecNorm, resRingGreen, resRingHighlight;
+        int resUnlock, resCustom, resTarget;
 
-        if (ringlockStyle == RinglockStyle.getIdByStyle(RinglockStyle.Revamped)) {
-            resSecNorm = R.drawable.jog_ring_rev_secback_normal;
-            resRingGreen = R.drawable.jog_ring_rev_ring_green;
-            resRingHighlight = R.drawable.jog_ring_rev_ring_pressed_red;
-        } else {
-            resSecNorm = R.drawable.jog_ring_secback_normal;
-            resRingGreen = R.drawable.jog_ring_ring_green;
-            resRingHighlight = R.drawable.jog_ring_ring_pressed_red;
+        switch (RinglockStyle.getStyleById(ringlockStyle)) {
+            case Revamped:
+                resSecNorm = R.drawable.jog_ring_rev_secback_normal;
+                resRingGreen = R.drawable.jog_ring_rev_ring_green;
+                resRingHighlight = R.drawable.jog_ring_rev_ring_pressed_red;
+                resUnlock = R.drawable.ic_jog_dial_unlock;
+                resCustom = R.drawable.ic_jog_dial_custom;
+                resTarget = R.drawable.jog_tab_target_green;
+                break;
+            case Holo:
+                resSecNorm = R.drawable.jog_ring_holo_secback_normal;
+                resRingGreen = R.drawable.jog_ring_holo_ring;
+                resRingHighlight = R.drawable.jog_ring_holo_ring_pressed;
+                resUnlock = R.drawable.ic_jog_dial_holo_unlock;
+                resCustom = R.drawable.ic_jog_dial_holo_custom;
+                resTarget = R.drawable.jog_tab_target_holo;
+                break;
+            default:
+                resSecNorm = R.drawable.jog_ring_secback_normal;
+                resRingGreen = R.drawable.jog_ring_ring_green;
+                resRingHighlight = R.drawable.jog_ring_ring_pressed_red;
+                resUnlock = R.drawable.ic_jog_dial_unlock;
+                resCustom = R.drawable.ic_jog_dial_custom;
+                resTarget = R.drawable.jog_tab_target_green;
+                break;
         }
 
         mRingSelector.setHighlightBackgroundResource(resRingHighlight);
@@ -578,40 +601,22 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
         if (mRingMinimal) {
             mRingSelector.enableRingMinimal(mRingMinimal);
             //unlock with middle - left and right are hidden
-            mRingSelector.setMiddleRingResources(
-                R.drawable.ic_jog_dial_unlock,
-                R.drawable.jog_tab_target_green,
-                resRingGreen);
-        }else if(mCustomAppToggle) {
+            mRingSelector.setMiddleRingResources(resUnlock, resTarget, resRingGreen);
+        } else if (mCustomAppToggle) {
             mRingSelector.enableMiddleRing(mCustomAppToggle);
-            if(mRingUnlockMiddle) {
+            if (mRingUnlockMiddle) {
                 mRingSelector.enableMiddlePrimary(mRingUnlockMiddle);
-                mRingSelector.setLeftRingResources(
-                    R.drawable.ic_jog_dial_custom,
-                    R.drawable.jog_tab_target_green,
-                    resRingGreen);
+                mRingSelector.setLeftRingResources(resCustom, resTarget, resRingGreen);
                 //unlock with middle
-                mRingSelector.setMiddleRingResources(
-                    R.drawable.ic_jog_dial_unlock,
-                    R.drawable.jog_tab_target_green,
-                    resRingGreen);
-                }else{
+                mRingSelector.setMiddleRingResources(resUnlock, resTarget, resRingGreen);
+            } else {
                 //unlock on left
-                mRingSelector.setLeftRingResources(
-                    R.drawable.ic_jog_dial_unlock,
-                    R.drawable.jog_tab_target_green,
-                    resRingGreen);
-                mRingSelector.setMiddleRingResources(
-                    R.drawable.ic_jog_dial_custom,
-                    R.drawable.jog_tab_target_green,
-                    resRingGreen);
-                }
-        }else{
+                mRingSelector.setLeftRingResources(resUnlock, resTarget, resRingGreen);
+                mRingSelector.setMiddleRingResources(resCustom, resTarget, resRingGreen);
+            }
+        } else {
             //no middle ring
-            mRingSelector.setLeftRingResources(
-                R.drawable.ic_jog_dial_unlock,
-                R.drawable.jog_tab_target_green,
-                resRingGreen);
+            mRingSelector.setLeftRingResources(resUnlock, resTarget, resRingGreen);
             mRingSelector.enableRingMinimal(false);
         }
 
@@ -713,26 +718,33 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
 
     private void centerWidgets() {
         if (mWidgetLayout == 2) {
-            RelativeLayout.LayoutParams layoutParams = (RelativeLayout.LayoutParams)
-            mCarrier.getLayoutParams();
+            RelativeLayout.LayoutParams layoutParams;
+            layoutParams = (RelativeLayout.LayoutParams) mCarrier.getLayoutParams();
             layoutParams.width = ViewGroup.LayoutParams.MATCH_PARENT;
             mCarrier.setLayoutParams(layoutParams);
             mCarrier.setGravity(Gravity.CENTER_HORIZONTAL);
-            layoutParams = (RelativeLayout.LayoutParams)mDate.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 1);
-            mDate.setLayoutParams(layoutParams);
-            layoutParams = (RelativeLayout.LayoutParams)mStatus1.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 1);
-            layoutParams.leftMargin = 0;
-            mStatus1.setLayoutParams(layoutParams);
-            layoutParams = (RelativeLayout.LayoutParams)mStatus2.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 1);
-            layoutParams.leftMargin = 0;
-            mStatus2.setLayoutParams(layoutParams);
-            layoutParams = (RelativeLayout.LayoutParams)mClock.getLayoutParams();
-            layoutParams.addRule(RelativeLayout.CENTER_HORIZONTAL, 1);
-            mClock.setLayoutParams(layoutParams);
+
+            mStatusBox.setGravity(Gravity.CENTER_HORIZONTAL);
+
+            centerWidget(mClock);
+            centerWidget(mDate);
+            centerWidget(mStatusCharging);
+            centerWidget(mStatusAlarm);
+            centerWidget(mStatusCalendar);
         }
+    }
+
+    private void centerWidget(View view) {
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        if (params instanceof RelativeLayout.LayoutParams) {
+            ((RelativeLayout.LayoutParams) params).addRule(RelativeLayout.CENTER_HORIZONTAL, 1);
+        } else if (params instanceof LinearLayout.LayoutParams) {
+            LinearLayout.LayoutParams p = (LinearLayout.LayoutParams) params;
+            p.gravity = Gravity.CENTER_HORIZONTAL;
+            p.leftMargin = 0;
+            p.rightMargin = 0;
+        }
+        view.setLayoutParams(params);
     }
 
     static void setBackground(Context bcontext, ViewGroup layout){
@@ -770,14 +782,6 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
         int targetId = mSilentMode ? R.drawable.jog_tab_target_yellow
                 : R.drawable.jog_tab_target_gray;
 
-        //Ringlock resource setup
-        int mRinglockStyle = Settings.System.getInt(mContext.getContentResolver(),
-                Settings.System.RINGLOCK_STYLE_PREF, RinglockStyle.getIdByStyle(RinglockStyle.Bubble));
-        int resRingGray=(mRinglockStyle == RinglockStyle.getIdByStyle(RinglockStyle.Bubble) ?
-                R.drawable.jog_ring_ring_gray : R.drawable.jog_ring_rev_ring_gray);
-        int resRingYellow=(mRinglockStyle == RinglockStyle.getIdByStyle(RinglockStyle.Bubble) ?
-                R.drawable.jog_ring_ring_yellow : R.drawable.jog_ring_rev_ring_yellow);
-
         mRotarySelector.setRightHandleResource(iconId);
 
         mTabSelector.setRightTabResources(iconId, targetId,
@@ -786,9 +790,35 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
                 mSilentMode ? R.drawable.jog_tab_right_sound_on
                             : R.drawable.jog_tab_right_sound_off);
 
-        mRingSelector.setRightRingResources(iconId, targetId,
-                mSilentMode ? resRingYellow
-                        : resRingGray);
+        //Ringlock resource setup
+        int ringlockStyle = Settings.System.getInt(mContext.getContentResolver(),
+                Settings.System.RINGLOCK_STYLE_PREF, RinglockStyle.getIdByStyle(RinglockStyle.Bubble));
+
+        int ringResource;
+
+        switch (RinglockStyle.getStyleById(ringlockStyle)) {
+            case Revamped:
+                ringResource = mSilentMode ? R.drawable.jog_ring_rev_ring_yellow :
+                                             R.drawable.jog_ring_rev_ring_gray;
+                break;
+            case Holo:
+                ringResource = R.drawable.jog_ring_holo_ring;
+                targetId = R.drawable.jog_tab_target_holo;
+                if (mSilentMode && vibe) {
+                    iconId = R.drawable.ic_jog_dial_holo_vibrate_on;
+                } else if (mSilentMode) {
+                    iconId = R.drawable.ic_jog_dial_holo_sound_off;
+                } else {
+                    iconId = R.drawable.ic_jog_dial_holo_sound_on;
+                }
+                break;
+            default:
+                ringResource = mSilentMode ? R.drawable.jog_ring_ring_yellow :
+                                             R.drawable.jog_ring_ring_gray;
+                break;
+        }
+
+        mRingSelector.setRightRingResources(iconId, targetId, ringResource);
     }
 
     private void resetStatusInfo(KeyguardUpdateMonitor updateMonitor) {
@@ -802,6 +832,7 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
 
         refreshBatteryStringAndIcon();
         refreshAlarmDisplay();
+        refreshCalendarDisplay();
         refreshMusicStatus();
         refreshPlayingTitle();
 
@@ -960,17 +991,16 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
 
     private void refreshAlarmDisplay() {
         mNextAlarm = mLockPatternUtils.getNextAlarm();
+        updateStatusLines();
+    }
 
-        if (mNextAlarm != null) {
-            mAlarmIcon = getContext().getResources().getDrawable(R.drawable.ic_lock_idle_alarm);
-        } else if (mLockCalendarAlarm) {
-            mNextAlarm = mLockPatternUtils.getNextCalendarAlarm(mLockCalendarLookahead,
+    private void refreshCalendarDisplay() {
+        if (mLockCalendarAlarm) {
+            mNextCalendar = mLockPatternUtils.getNextCalendarAlarm(mLockCalendarLookahead,
                     mCalendars, mLockCalendarRemindersOnly);
-            if (mNextAlarm != null) {
-                mAlarmIcon = getContext().getResources().getDrawable(R.drawable.ic_lock_idle_calendar);
-            }
+        } else {
+            mNextCalendar = null;
         }
-
         updateStatusLines();
     }
 
@@ -1086,33 +1116,32 @@ class LockScreen extends LinearLayout implements KeyguardScreen, KeyguardUpdateM
     }
 
     private void updateStatusLines() {
-        if (!mStatus.showStatusLines()
-                || (mCharging == null && mNextAlarm == null) || mLensePortrait || mWidgetLayout == 1) {
-            mStatus1.setVisibility(View.INVISIBLE);
-            mStatus2.setVisibility(View.INVISIBLE);
-        } else if (mCharging != null && mNextAlarm == null) {
-            // charging only
-            mStatus1.setVisibility(View.VISIBLE);
-            mStatus2.setVisibility(View.INVISIBLE);
+        if (!mStatus.showStatusLines() || mLensePortrait || mWidgetLayout == 1) {
+            mStatusBox.setVisibility(INVISIBLE);
+        } else {
+            mStatusBox.setVisibility(VISIBLE);
 
-            mStatus1.setText(mCharging);
-            mStatus1.setCompoundDrawablesWithIntrinsicBounds(mChargingIcon, null, null, null);
-        } else if (mNextAlarm != null && mCharging == null) {
-            // next alarm only
-            mStatus1.setVisibility(View.VISIBLE);
-            mStatus2.setVisibility(View.INVISIBLE);
+            if (mCharging != null) {
+                mStatusCharging.setText(mCharging);
+                mStatusCharging.setCompoundDrawablesWithIntrinsicBounds(mChargingIcon, null, null, null);
+                mStatusCharging.setVisibility(VISIBLE);
+            } else {
+                mStatusCharging.setVisibility(GONE);
+            }
 
-            mStatus1.setText(mNextAlarm);
-            mStatus1.setCompoundDrawablesWithIntrinsicBounds(mAlarmIcon, null, null, null);
-        } else if (mCharging != null && mNextAlarm != null) {
-            // both charging and next alarm
-            mStatus1.setVisibility(View.VISIBLE);
-            mStatus2.setVisibility(View.VISIBLE);
+            if (mNextAlarm != null) {
+                mStatusAlarm.setText(mNextAlarm);
+                mStatusAlarm.setVisibility(VISIBLE);
+            } else {
+                mStatusAlarm.setVisibility(GONE);
+            }
 
-            mStatus1.setText(mCharging);
-            mStatus1.setCompoundDrawablesWithIntrinsicBounds(mChargingIcon, null, null, null);
-            mStatus2.setText(mNextAlarm);
-            mStatus2.setCompoundDrawablesWithIntrinsicBounds(mAlarmIcon, null, null, null);
+            if (mNextCalendar != null) {
+                mStatusCalendar.setText(mNextCalendar);
+                mStatusCalendar.setVisibility(VISIBLE);
+            } else {
+                mStatusCalendar.setVisibility(GONE);
+            }
         }
     }
 
