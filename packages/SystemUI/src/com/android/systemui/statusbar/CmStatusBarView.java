@@ -35,6 +35,7 @@ import android.os.Handler;
 import android.os.Process;
 import android.os.RemoteException;
 import android.os.ServiceManager;
+import android.os.Vibrator;
 import android.provider.CmSystem;
 import android.provider.Settings;
 import android.util.AttributeSet;
@@ -81,6 +82,7 @@ public class CmStatusBarView extends StatusBarView {
     boolean mShowSearch;
     boolean mShowQuickNa;
     ViewGroup mIcons;
+    Vibrator mVibrator;
 
     // used for fullscreen handling and broadcasts
     ActivityManager mActivityManager;
@@ -173,6 +175,10 @@ public class CmStatusBarView extends StatusBarView {
          * If true then add statusbar buttons and set listeners and intents
          */
         if (mHasSoftButtons) {
+
+	    // vibrator
+            mVibrator = (android.os.Vibrator)getContext().getSystemService(Context.VIBRATOR_SERVICE);
+
             mHomeButton = (ImageButton)findViewById(R.id.status_home);
             mHomeButton.setOnClickListener(
                 new ImageButton.OnClickListener() {
@@ -180,6 +186,7 @@ public class CmStatusBarView extends StatusBarView {
                         if(mService.mExpanded)
                             mQuickNaButton.performClick();
                         if(DEBUG) Slog.i(TAG, "Home clicked");
+                        vibrate();
                         Intent setIntent = new Intent(Intent.ACTION_MAIN);
                         setIntent.addCategory(Intent.CATEGORY_HOME);
                         setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -200,6 +207,7 @@ public class CmStatusBarView extends StatusBarView {
                 new ImageButton.OnClickListener() {
                     public void onClick(View v) {
                         if(DEBUG) Slog.i(TAG, "Menu clicked");
+                        vibrate();
                         simulateKeypress(KeyEvent.KEYCODE_MENU);
                     }
                 }
@@ -209,6 +217,7 @@ public class CmStatusBarView extends StatusBarView {
                 new ImageButton.OnClickListener() {
                     public void onClick(View v) {
                         if(DEBUG) Slog.i(TAG, "Back clicked");
+                        vibrate();
                         simulateKeypress(KeyEvent.KEYCODE_BACK);
                     }
                 }
@@ -226,6 +235,7 @@ public class CmStatusBarView extends StatusBarView {
                 new ImageButton.OnClickListener() {
                     public void onClick(View v) {
                         if(DEBUG) Slog.i(TAG, "Search clicked");
+                        vibrate();
                         CmStatusBarView.this.simulateKeypress(KeyEvent.KEYCODE_SEARCH);
                     }
                 }
@@ -256,6 +266,7 @@ public class CmStatusBarView extends StatusBarView {
                             mService.performExpand();
                         }
                         if(DEBUG) Slog.i(TAG, "Quick Notification Area clicked");
+                        vibrate();
                     }
                 }
             );
@@ -266,6 +277,7 @@ public class CmStatusBarView extends StatusBarView {
                         if(isStillActive(mFsCallerProcess, mFsCallerActivity))
                             mContext.sendBroadcast(mFsForceIntent);
                         if(DEBUG) Slog.i(TAG, "Fullscreen Hide clicked");
+                        vibrate();
                     }
                 }
             );
@@ -710,6 +722,18 @@ public class CmStatusBarView extends StatusBarView {
      */
     private void simulateKeypress(final int keyCode) {
         new Thread( new KeyEventInjector( keyCode ) ).start();
+    }
+    
+    /**
+     * Vibrate if haptics are enabled
+     */
+    private void vibrate() {
+        ContentResolver resolver = mContext.getContentResolver();
+        final boolean hapticsEnabled = Settings.System.getInt(resolver, Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1;
+        if (hapticsEnabled) {
+            long[] hapFeedback = Settings.System.getLongArray(resolver, Settings.System.HAPTIC_DOWN_ARRAY, new long[] { 0 });
+            mVibrator.vibrate(hapFeedback, -1);
+        }
     }
 
     private class KeyEventInjector implements Runnable {
