@@ -176,7 +176,7 @@ public class CmStatusBarView extends StatusBarView {
          */
         if (mHasSoftButtons) {
 
-	    // vibrator
+            // softkey haptics
             boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
                                     Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
             if (hapticsEnabled)
