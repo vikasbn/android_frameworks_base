@@ -177,10 +177,7 @@ public class CmStatusBarView extends StatusBarView {
         if (mHasSoftButtons) {
 
             // softkey haptics
-            boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-            if (hapticsEnabled)
-                        mVibrator = (android.os.Vibrator)getContext().getSystemService(Context.VIBRATOR_SERVICE);
+            mVibrator = (android.os.Vibrator)getContext().getSystemService(Context.VIBRATOR_SERVICE);
 
             mHomeButton = (ImageButton)findViewById(R.id.status_home);
             mHomeButton.setOnClickListener(
