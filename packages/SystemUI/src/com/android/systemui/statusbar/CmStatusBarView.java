@@ -186,9 +186,7 @@ public class CmStatusBarView extends StatusBarView {
                         if(mService.mExpanded)
                             mQuickNaButton.performClick();
                         if(DEBUG) Slog.i(TAG, "Home clicked");
-                        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-                        if (hapticsEnabled) vibrate();
+                        hapticFeedbackHandler();
                         Intent setIntent = new Intent(Intent.ACTION_MAIN);
                         setIntent.addCategory(Intent.CATEGORY_HOME);
                         setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -209,9 +207,7 @@ public class CmStatusBarView extends StatusBarView {
                 new ImageButton.OnClickListener() {
                     public void onClick(View v) {
                         if(DEBUG) Slog.i(TAG, "Menu clicked");
-                        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-                        if (hapticsEnabled) vibrate();
+                        hapticFeedbackHandler();
                         simulateKeypress(KeyEvent.KEYCODE_MENU);
                     }
                 }
@@ -221,9 +217,7 @@ public class CmStatusBarView extends StatusBarView {
                 new ImageButton.OnClickListener() {
                     public void onClick(View v) {
                         if(DEBUG) Slog.i(TAG, "Back clicked");
-                        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-                        if (hapticsEnabled) vibrate();
+                        hapticFeedbackHandler();
                         simulateKeypress(KeyEvent.KEYCODE_BACK);
                     }
                 }
@@ -241,9 +235,7 @@ public class CmStatusBarView extends StatusBarView {
                 new ImageButton.OnClickListener() {
                     public void onClick(View v) {
                         if(DEBUG) Slog.i(TAG, "Search clicked");
-                        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-                        if (hapticsEnabled) vibrate();
+                        hapticFeedbackHandler();
                         CmStatusBarView.this.simulateKeypress(KeyEvent.KEYCODE_SEARCH);
                     }
                 }
@@ -274,9 +266,7 @@ public class CmStatusBarView extends StatusBarView {
                             mService.performExpand();
                         }
                         if(DEBUG) Slog.i(TAG, "Quick Notification Area clicked");
-                        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-                        if (hapticsEnabled) vibrate();
+                        hapticFeedbackHandler();
                     }
                 }
             );
@@ -287,9 +277,7 @@ public class CmStatusBarView extends StatusBarView {
                         if(isStillActive(mFsCallerProcess, mFsCallerActivity))
                             mContext.sendBroadcast(mFsForceIntent);
                         if(DEBUG) Slog.i(TAG, "Fullscreen Hide clicked");
-                        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
-                        if (hapticsEnabled) vibrate();
+                        hapticFeedbackHandler();
                     }
                 }
             );
@@ -739,10 +727,14 @@ public class CmStatusBarView extends StatusBarView {
     /**
      * Vibrate if haptics are enabled
      */
-    private void vibrate() {
+    private void hapticFeedbackHandler() {
+        boolean hapticsEnabled = (Settings.System.getInt(getContext().getContentResolver(),
+            Settings.System.HAPTIC_FEEDBACK_ENABLED, 0) == 1);
+        if (hapticsEnabled) {
             long[] hapFeedback = Settings.System.getLongArray(getContext().getContentResolver(),
-                                    Settings.System.HAPTIC_DOWN_ARRAY, new long[] { 0 });
+                Settings.System.HAPTIC_DOWN_ARRAY, new long[] { 0 });
             mVibrator.vibrate(hapFeedback, -1);
+        }
     }
 
     private class KeyEventInjector implements Runnable {
