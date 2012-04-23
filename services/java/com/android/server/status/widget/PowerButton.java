@@ -45,9 +45,13 @@ public abstract class PowerButton {
     public int currentState;
     public int currentPosition;
 
+    // a static onlongclicklistener that can be set to register a callback when ANY button is long clicked
+    private static View.OnLongClickListener GLOBAL_ON_LONG_CLICK_LISTENER = null;
+
     abstract void initButton(int position);
     abstract public void toggleState(Context context);
     public abstract void updateState(Context context);
+    protected abstract boolean handleLongClick();
 
     public void setupButton(int position) {
         currentPosition = position;
@@ -86,6 +90,28 @@ public abstract class PowerButton {
                     break;
              }
         }
+    }
+
+    private View.OnLongClickListener mLongClickListener = new View.OnLongClickListener() {
+        public boolean onLongClick(View v) {
+            boolean result = false;
+            String type = (String)v.getTag();
+            for (Map.Entry<String, PowerButton> entry : BUTTONS_LOADED.entrySet()) {
+                if(entry.getKey().endsWith(type)) {
+                    result = entry.getValue().handleLongClick();
+                    break;
+                }
+            }
+
+            if(result && GLOBAL_ON_LONG_CLICK_LISTENER != null) {
+                GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);
+            }
+            return result;
+        }
+    };
+
+    public static void setGlobalOnLongClickListener(View.OnLongClickListener listener) {
+        GLOBAL_ON_LONG_CLICK_LISTENER = listener;
     }
 
     private void updateImageView(ExpandedView view, int id, int resId) {
