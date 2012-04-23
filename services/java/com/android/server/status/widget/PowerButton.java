@@ -45,6 +45,8 @@ public abstract class PowerButton {
     public int currentState;
     public int currentPosition;
 
+    protected View mView;
+
     // a static onlongclicklistener that can be set to register a callback when ANY button is long clicked
     private static View.OnLongClickListener GLOBAL_ON_LONG_CLICK_LISTENER = null;
 
