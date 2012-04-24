@@ -63,6 +63,14 @@ public class AirplaneButton extends PowerButton {
                  Settings.System.AIRPLANE_MODE_ON,0) == 1;
     }
 
+    @Override
+    protected boolean handleLongClick() {
+        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
+    }
 
     public static AirplaneButton getInstance() {
         if (ownButton==null) ownButton = new AirplaneButton();

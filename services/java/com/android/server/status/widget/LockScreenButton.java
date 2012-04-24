@@ -7,6 +7,7 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.Gravity;
 import android.widget.Toast;
@@ -97,6 +98,14 @@ public class LockScreenButton extends PowerButton {
         return lockScreen;
     }
 
+    @Override
+    protected boolean handleLongClick() {
+        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
+    }
 
     public static LockScreenButton getInstance() {
         if (ownButton==null) ownButton = new LockScreenButton();

@@ -4,6 +4,7 @@ import com.android.internal.R;
 import com.android.server.status.widget.PowerButton;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.provider.Settings;
@@ -85,6 +86,15 @@ public class MobileDataButton extends PowerButton {
         if (ownButton == null) ownButton = new MobileDataButton();
 
         return ownButton;
+    }
+
+    @Override
+    protected boolean handleLongClick() {
+        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
     }
 
     @Override

@@ -47,6 +47,7 @@ public abstract class PowerButton {
 
     protected View mView;
 
+
     // a static onlongclicklistener that can be set to register a callback when ANY button is long clicked
     private static View.OnLongClickListener GLOBAL_ON_LONG_CLICK_LISTENER = null;
 
@@ -96,19 +97,19 @@ public abstract class PowerButton {
 
     private View.OnLongClickListener mLongClickListener = new View.OnLongClickListener() {
         public boolean onLongClick(View v) {
-            boolean result = false;
+            /* boolean result = false;
             String type = (String)v.getTag();
             for (Map.Entry<String, PowerButton> entry : BUTTONS_LOADED.entrySet()) {
                 if(entry.getKey().endsWith(type)) {
                     result = entry.getValue().handleLongClick();
                     break;
                 }
-            }
+		} */
 
-            if(result && GLOBAL_ON_LONG_CLICK_LISTENER != null) {
+            if(GLOBAL_ON_LONG_CLICK_LISTENER != null) {
                 GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);
             }
-            return result;
+            return true;
         }
     };
 

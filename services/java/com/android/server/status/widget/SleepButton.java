@@ -5,6 +5,7 @@ import com.android.server.status.widget.PowerButton;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.content.Intent;
 import android.provider.Settings;
 import android.os.PowerManager;
 import android.os.SystemClock;
@@ -34,6 +35,15 @@ public class SleepButton extends PowerButton {
         PowerManager mPowerManager = (PowerManager)context.getSystemService(
                           Context.POWER_SERVICE);
         mPowerManager.goToSleep(SystemClock.uptimeMillis() + 1);
+    }
+
+    @Override
+    protected boolean handleLongClick() {
+        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
     }
 
     public static SleepButton getInstance() {
