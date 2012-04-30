@@ -1919,6 +1919,24 @@ public class StatusBarService extends IStatusBar.Stub
         }
     };
 
+    private View.OnLongClickListener mLongClickListener = new View.OnLongClickListener() {
+        public boolean onLongClick(View v) {
+            LinearLayout layout = (LinearLayout)v;
+            String type = (String)layout.getTag();
+            PowerButton btn = mUsedPowerButtons.get(type);
+	    boolean result = btn.handleLongClick();
+
+            if(GLOBAL_ON_LONG_CLICK_LISTENER != null) {
+                GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);
+            }
+            return true;
+        }
+    };
+
+    public static void setGlobalOnLongClickListener(View.OnLongClickListener listener) {
+        GLOBAL_ON_LONG_CLICK_LISTENER = listener;
+    }
+
     /** Power Widget **/
 
    private View.OnClickListener mPowerListener = new View.OnClickListener() {
