@@ -95,28 +95,6 @@ public abstract class PowerButton {
         }
     }
 
-    private View.OnLongClickListener mLongClickListener = new View.OnLongClickListener() {
-        public boolean onLongClick(View v) {
-            /* boolean result = false;
-            String type = (String)v.getTag();
-            for (Map.Entry<String, PowerButton> entry : BUTTONS_LOADED.entrySet()) {
-                if(entry.getKey().endsWith(type)) {
-                    result = entry.getValue().handleLongClick();
-                    break;
-                }
-		} */
-
-            if(GLOBAL_ON_LONG_CLICK_LISTENER != null) {
-                GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);
-            }
-            return true;
-        }
-    };
-
-    public static void setGlobalOnLongClickListener(View.OnLongClickListener listener) {
-        GLOBAL_ON_LONG_CLICK_LISTENER = listener;
-    }
-
     private void updateImageView(ExpandedView view, int id, int resId) {
         ImageView imageIcon = (ImageView)view.findViewById(id);
         imageIcon.setImageResource(resId);
