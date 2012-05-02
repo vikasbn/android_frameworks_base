@@ -89,7 +89,7 @@ public class MobileDataButton extends PowerButton {
     }
 
     @Override
-    protected boolean handleLongClick() {
+    public boolean handleLongClick() {
         Intent intent = new Intent("android.settings.WIFI_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

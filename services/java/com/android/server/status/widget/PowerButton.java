@@ -52,7 +52,7 @@ public abstract class PowerButton {
     abstract void initButton(int position);
     abstract public void toggleState(Context context);
     public abstract void updateState(Context context);
-    protected abstract boolean handleLongClick();
+    public abstract boolean handleLongClick();
 
     public void setupButton(int position) {
         currentPosition = position;
