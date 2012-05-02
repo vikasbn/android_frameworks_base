@@ -280,6 +280,8 @@ public class StatusBarService extends IStatusBar.Stub
     Drawable expBarHeadDrawable;
     Drawable expBarNotifTitleDrawable;
     
+    // a static onlongclicklistener that can be set to register a callback when ANY button is long clicked
+    private static View.OnLongClickListener GLOBAL_ON_LONG_CLICK_LISTENER = null;
     
     // for disabling the status bar
     ArrayList<DisableRecord> mDisableRecords = new ArrayList<DisableRecord>();
