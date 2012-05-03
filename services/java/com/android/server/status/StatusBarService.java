@@ -1934,6 +1934,7 @@ public class StatusBarService extends IStatusBar.Stub
             if(GLOBAL_ON_LONG_CLICK_LISTENER != null) {
                 GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);
             }
+	    addPendingOp(OP_TOGGLE, null, false);
             return true;
         }
     };
