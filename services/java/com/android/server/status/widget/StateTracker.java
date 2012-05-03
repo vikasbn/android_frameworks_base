@@ -4,6 +4,7 @@ import com.android.server.status.widget.PowerButton;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
+import android.view.View;
 
 
 /**

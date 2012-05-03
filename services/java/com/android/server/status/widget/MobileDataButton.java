@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.provider.Settings;
+import android.view.View;
 
 public class MobileDataButton extends PowerButton {
 
@@ -89,9 +90,9 @@ public class MobileDataButton extends PowerButton {
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClassName("com.android.phone", "com.android.phone.Settings");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);
         return true;

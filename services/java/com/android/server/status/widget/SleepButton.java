@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.util.Log;
+import android.view.View;
 
 public class SleepButton extends PowerButton {
 
@@ -38,8 +39,8 @@ public class SleepButton extends PowerButton {
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.DISPLAY_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);

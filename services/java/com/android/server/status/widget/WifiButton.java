@@ -13,6 +13,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.provider.Settings;
+import android.view.View;
 
 public class WifiButton extends PowerButton{
 
@@ -173,7 +174,7 @@ public class WifiButton extends PowerButton{
     }
 
     @Override
-    public boolean handleLongClick() {
+    public boolean handleLongClick(View mView) {
         Intent intent = new Intent("android.settings.WIFI_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

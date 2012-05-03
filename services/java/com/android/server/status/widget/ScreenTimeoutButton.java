@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.widget.Toast;
+import android.view.View;
 
 public class ScreenTimeoutButton extends PowerButton {
 
@@ -124,8 +125,8 @@ public class ScreenTimeoutButton extends PowerButton {
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.DISPLAY_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);

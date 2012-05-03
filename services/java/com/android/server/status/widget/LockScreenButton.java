@@ -12,6 +12,7 @@ import android.content.SharedPreferences;
 import android.view.Gravity;
 import android.widget.Toast;
 import android.provider.Settings;
+import android.view.View;
 
 public class LockScreenButton extends PowerButton {
 
@@ -99,8 +100,8 @@ public class LockScreenButton extends PowerButton {
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+	public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.SECURITY_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);

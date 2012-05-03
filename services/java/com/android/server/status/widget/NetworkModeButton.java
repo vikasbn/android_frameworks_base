@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.provider.Settings.SettingNotFoundException;
 import android.widget.Toast;
 import android.provider.Settings;
+import android.view.View;
 
 import com.android.internal.telephony.Phone;
 
@@ -221,9 +222,9 @@ public class NetworkModeButton extends PowerButton{
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
-        intent.addCategory(Intent.CATEGORY_DEFAULT);
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClassName("com.android.phone", "com.android.phone.Settings");
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);
         return true;

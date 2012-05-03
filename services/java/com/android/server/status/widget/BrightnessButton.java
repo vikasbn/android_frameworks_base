@@ -12,6 +12,7 @@ import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 
 public class BrightnessButton extends PowerButton {
 
@@ -282,8 +283,8 @@ Low High Max
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.DISPLAY_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);

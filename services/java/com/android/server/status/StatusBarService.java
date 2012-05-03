@@ -1929,7 +1929,7 @@ public class StatusBarService extends IStatusBar.Stub
             String type = (String)layout.getTag();
 	    Log.i(tag1, "Got the type of the button pressed - " + type); 
             PowerButton btn = mUsedPowerButtons.get(type);
-	    boolean result = btn.handleLongClick();
+	    boolean result = btn.handleLongClick(v);
 	    Log.i(tag1, "Button pressed? : " + result);
             if(GLOBAL_ON_LONG_CLICK_LISTENER != null) {
                 GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);

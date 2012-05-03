@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.location.LocationManager;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.View;
 
 public class GPSButton extends PowerButton {
 
@@ -54,8 +55,8 @@ public class GPSButton extends PowerButton {
     }
 
     @Override
-    public boolean handleLongClick() {
-        Intent intent = new Intent("android.settings.WIFI_SETTINGS");
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.LOCATION_SOURCE_SETTINGS");
         intent.addCategory(Intent.CATEGORY_DEFAULT);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mView.getContext().startActivity(intent);
