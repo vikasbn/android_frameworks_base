@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.provider.Settings;
+import android.view.View;
 
 public class AirplaneButton extends PowerButton {
 
@@ -63,6 +64,14 @@ public class AirplaneButton extends PowerButton {
                  Settings.System.AIRPLANE_MODE_ON,0) == 1;
     }
 
+    @Override
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.AIRPLANE_MODE_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
+    }
 
     public static AirplaneButton getInstance() {
         if (ownButton==null) ownButton = new AirplaneButton();

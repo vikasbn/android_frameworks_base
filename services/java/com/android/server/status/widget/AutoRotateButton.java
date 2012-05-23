@@ -4,7 +4,9 @@ import com.android.internal.R;
 import com.android.server.status.widget.PowerButton;
 
 import android.content.Context;
+import android.content.Intent;
 import android.provider.Settings;
+import android.view.View;
 
 public class AutoRotateButton extends PowerButton {
 
@@ -47,6 +49,15 @@ public class AutoRotateButton extends PowerButton {
         }
     }
 
+    @Override
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.DISPLAY_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
+    }
+
     public static int getOrientationState(Context context) {
         return Settings.System.getInt(
                 context.getContentResolver(),
@@ -61,4 +72,5 @@ public class AutoRotateButton extends PowerButton {
     @Override
     void initButton(int position) {
     }
+
 }

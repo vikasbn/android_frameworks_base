@@ -11,6 +11,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.util.Log;
 import android.provider.Settings;
+import android.view.View;
 
 public class WifiApButton extends PowerButton {
 
@@ -160,6 +161,15 @@ public class WifiApButton extends PowerButton {
         sWifiApState.toggleState(context);
     }
 
+
+    @Override
+    public boolean handleLongClick(View mView) {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.setClassName("com.android.settings", "com.android.settings.TetherSettings");
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
+    }
 
     public static WifiApButton getInstance() {
         if (ownButton == null) {

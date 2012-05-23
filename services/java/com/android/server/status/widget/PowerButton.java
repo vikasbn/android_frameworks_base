@@ -45,9 +45,13 @@ public abstract class PowerButton {
     public int currentState;
     public int currentPosition;
 
+
+
+
     abstract void initButton(int position);
     abstract public void toggleState(Context context);
     public abstract void updateState(Context context);
+    public abstract boolean handleLongClick(View v);
 
     public void setupButton(int position) {
         currentPosition = position;

@@ -280,6 +280,8 @@ public class StatusBarService extends IStatusBar.Stub
     Drawable expBarHeadDrawable;
     Drawable expBarNotifTitleDrawable;
     
+    // a static onlongclicklistener that can be set to register a callback when ANY button is long clicked
+    private static View.OnLongClickListener GLOBAL_ON_LONG_CLICK_LISTENER = null;
     
     // for disabling the status bar
     ArrayList<DisableRecord> mDisableRecords = new ArrayList<DisableRecord>();
@@ -1919,6 +1921,28 @@ public class StatusBarService extends IStatusBar.Stub
         }
     };
 
+    private View.OnLongClickListener mLongClickListener = new View.OnLongClickListener() {
+        public boolean onLongClick(View v) {
+	    String tag1 = "StatusBarService";
+	    Log.i(tag1, "Entered the long click listener");
+            LinearLayout layout = (LinearLayout)v;
+            String type = (String)layout.getTag();
+	    Log.i(tag1, "Got the type of the button pressed - " + type); 
+            PowerButton btn = mUsedPowerButtons.get(type);
+	    boolean result = btn.handleLongClick(v);
+	    Log.i(tag1, "Button pressed? : " + result);
+            if(GLOBAL_ON_LONG_CLICK_LISTENER != null) {
+                GLOBAL_ON_LONG_CLICK_LISTENER.onLongClick(v);
+            }
+	    addPendingOp(OP_TOGGLE, null, false);
+            return true;
+        }
+    };
+
+    public static void setGlobalOnLongClickListener(View.OnLongClickListener listener) {
+        GLOBAL_ON_LONG_CLICK_LISTENER = listener;
+    }
+
     /** Power Widget **/
 
    private View.OnClickListener mPowerListener = new View.OnClickListener() {
@@ -1940,7 +1964,7 @@ public class StatusBarService extends IStatusBar.Stub
                                 Settings.System.WIDGET_BUTTONS);
         Log.i("setupPowerWidget", "List: "+lists);
         if(lists == null) {
-            lists = "toggleWifi|toggleBluetooth|toggleGPS|toggleSound";
+            lists = "toggleWifi|toggleBluetooth|toggleGPS|toggleSound|toggleMobileData";
         }
         List<String> list = Arrays.asList(lists.split("\\|"));
         clearWidget();
@@ -1952,6 +1976,7 @@ public class StatusBarService extends IStatusBar.Stub
             layout.setVisibility(View.VISIBLE);
             layout.setTag(list.get(posi));
             layout.setOnClickListener(mPowerListener);
+	    layout.setOnLongClickListener(mLongClickListener);
             setupWidget(buttonType, posi + 1);
         }
         updateWidget();

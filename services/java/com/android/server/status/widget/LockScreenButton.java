@@ -7,10 +7,12 @@ import android.app.Activity;
 import android.app.KeyguardManager;
 import android.app.KeyguardManager.KeyguardLock;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.view.Gravity;
 import android.widget.Toast;
 import android.provider.Settings;
+import android.view.View;
 
 public class LockScreenButton extends PowerButton {
 
@@ -97,6 +99,14 @@ public class LockScreenButton extends PowerButton {
         return lockScreen;
     }
 
+    @Override
+	public boolean handleLongClick(View mView) {
+        Intent intent = new Intent("android.settings.SECURITY_SETTINGS");
+        intent.addCategory(Intent.CATEGORY_DEFAULT);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mView.getContext().startActivity(intent);
+        return true;
+    }
 
     public static LockScreenButton getInstance() {
         if (ownButton==null) ownButton = new LockScreenButton();
